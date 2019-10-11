@@ -18,54 +18,66 @@ connection.connect(function (err) {
 });
 
 function afterConnection() {
-  connection.query("SELECT * FROM products", function(err, res) {
-    if (err) throw err;
-    console.log(res);
-    
+  var query = connection.query("SELECT * FROM products", function (err, res) {
+        if (err) throw err;
+        console.log(res);
 
 
-});
-inquirer
-    .prompt([
-        {
-            type: 'submit',
-            name: 'buy',
-            message: 'What would you like to buy? Insert product id.',
-            submit: "" ,
+    });
+    inquirer
+        .prompt([
+            {
+                type: 'submit',
+                name: 'buy',
+                message: 'What would you like to buy? Insert product id.',
+                submit: "",
 
-        },
-        {
-          type: 'submit',
-          name: 'units',
-          message: '... and how many units would you like to purchase?',
-          submit: "" ,
+            },
+            {
+                type: 'submit',
+                name: 'units',
+                message: '... and how many units would you like to purchase?',
+                submit: "",
 
-      },
-    ])
-    .then(answers => {
-        console.info(`You purchased: ${answers.units} of  ${answers.buy}`);
+            },
+        ])
+        .then(answers => {
+        connection.query("SELECT stock_quantity FROM products WHERE ?",
+            [
+               {
+               item_id: inquirer.prompt.buy,
+               }
+            ]),function (err, data) {
+                if (err) throw err;
+                console.log(data);
 
-        connection.query("SELECT * FROM products", function (err, res) {
-            if (err) throw err;
-            console.log(res);
+                // if (parseInt(inquirer.units, 10) >= stock_quantity) {
+                //     return console.log(`Insuffient quantity!`);
+                // } else {
+                //     updateProduct(answers.buy, answers.units)
+                //     console.info(`You purchased: ${answers.units} of  ${answers.buy}`);
+                // }
+            };
 
-            inquirer.prompt([
+    function updateProduct(id, units) {
+        console.log("Updating inventory...\n");
+        var query = connection.query(
+            "UPDATE products SET ? WHERE ?",
+            [
                 {
-                    type: 'list',
-                    choices: function () {
-                        var arr = []
-                        for (var i = 0; i < res.length; i++) {
-                            arr.push(res[i].item)
-
-                        }
-                        return arr
-                    },
-                    name: "item",
-                    message: "What would you like to buy?"
-
-
-
-
+                    stock_quantity: stock_quantity - parseInt(units, 10),
+                },
+                {
+                    item_id: id,
+                }
+            ],
+            function (err, res) {
+                if (err) throw err;
+                console.log(res.affectedRows + " products updated!\n");
+            }
+        );
+        console.log(query.sql);
+    }
 
 
 
@@ -76,26 +88,23 @@ inquirer
 
 
 
-// function updateProduct() {
-//     console.log("Updating inventory...\n");
-//     var query = connection.query(
-//         "UPDATE products SET ? WHERE ?",
-//         [
-//             {
-//                 product_name: "",
-//             },
-//             {
-//                 stock_quantity: parseInt(""),
-//             }
-//         ],
-//         function(err, res) {
-//             if (err) throw err;
-//             console.log(res.affectedRows + " products updated!\n");
-//             deleteProduct();
-//         }
-//         );
-//         console.log(query.sql);
-//     }
+
+
+
+
+    // inquirer.prompt([
+    //     {
+    //         type: 'list',
+    //         choices: function () {
+    //             var arr = []
+    //             for (var i = 0; i < res.length; i++) {
+    //                 arr.push(res[i].item)
+
+    //             }
+    //             return arr
+    //         },
+    //         name: "item",
+    //         message: "What would you like to buy?"
 
 //     function deleteProduct() {
 //         console.log("Deleting sold out inventory...\n");
