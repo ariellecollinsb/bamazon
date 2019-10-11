@@ -71,7 +71,6 @@ function updateProduct(id, units) {
                 console.error(error.message);
                 return;
             }
-            console.log('Rows affected:', results.affectedRows);
         });
 
     connection.end();
